@@ -22,18 +22,11 @@ BYTE_TO_MB = 1024.0 * 1024.0
 ALL_TABLE_HEADERS = [
     'Region',
     'Function',
-    'Memory (MB)',
-    'Code Size (MB)',
-    'Timeout (seconds)',
-    'Runtime',
-    'Description',
-    'Last Modified',
-    'Last Invocation',
     'Role Name',
     'Policies'
 ]
 
-SORT_KEYS = ['region', 'last-modified', 'last-invocation', 'runtime']
+SORT_KEYS = ['region']
 
 
 def list_available_lambda_regions():
@@ -71,53 +64,6 @@ def init_boto_client(client_name, region, args):
     return boto_client
 
 
-def get_days_ago(datetime_obj):
-    """
-    Converts a datetime object to "time ago" string
-    :param datetime_obj: Datetime
-    :return: "time ago" string
-    """
-    days_ago = (datetime.now() - datetime_obj).days
-    datetime_str = 'Today'
-    if days_ago == 1:
-        datetime_str = 'Yesterday'
-    elif days_ago > 1:
-        datetime_str = '{0} days ago'.format(days_ago)
-
-    return datetime_str
-
-
-def get_last_invocation(region, args, function_name):
-    """
-    Return last invocation timestamp (epoch) or -1 if not found.
-    -1 can be returned if no log group exists for Lambda,
-    or if there are no streams in the log.
-    :param region: function region
-    :param args: arguments
-    :param function_name: function name
-    :return: last invocation or -1
-    """
-    logs_client = init_boto_client('logs', region, args)
-    last_invocation = -1
-
-    # try:
-    #     logs = logs_client.describe_log_streams(
-    #         logGroupName='/aws/lambda/{0}'.format(function_name),
-    #         orderBy='LastEventTime',
-    #         descending=True
-    #     )
-    # except ClientError as _:
-    #     return last_invocation
-
-    # log_streams_timestamp = [
-    #     log.get('lastEventTimestamp', 0) for log in logs['logStreams']
-    # ]
-
-    # if log_streams_timestamp:
-    #     last_invocation = max(log_streams_timestamp)
-
-    return last_invocation
-
 def create_tables(lambdas_data, args):
     """
     Create the output tables
@@ -125,60 +71,54 @@ def create_tables(lambdas_data, args):
     :param args: argparse arguments
     :return: textual table-format information about the Lambdas
     """
-    all_table_data = [ALL_TABLE_HEADERS]
+    #all_table_data = [ALL_TABLE_HEADERS]
+    all_table_data = []
+    all_list_data = []
     for lambda_data in lambdas_data:
         function_data = lambda_data['function-data']
-        last_invocation = 'N/A (no invocations?)'
-        if lambda_data['last-invocation'] != -1:
-            last_invocation = get_days_ago(
-                datetime.fromtimestamp(lambda_data['last-invocation'] / 1000)
-            )  
+
         all_table_data.append([
             lambda_data['region'],
             str(function_data['FunctionName']),
-            str(function_data['MemorySize']),
-            '%.2f' % (function_data['CodeSize'] / BYTE_TO_MB),
-            str(function_data['Timeout']),
-            str(function_data['Runtime']),
-            function_data['Description'],
-            get_days_ago(lambda_data['last-modified']),
-            last_invocation,
-
             lambda_data['rolename'],
             lambda_data['policies']
         ])
 
-    if args.should_print_all:
-        min_table_data = all_table_data
-    else:
-        # Get only the region, function, last modified and last invocation
-        min_table_data = [
-            [
-                lambda_data[0], lambda_data[1], lambda_data[5], lambda_data[-2], lambda_data[-1]
-            ]
-            for lambda_data in all_table_data
-        ]
+        all_list_data.append({
+            'Region': lambda_data['region'],
+            'FunctionName': str(function_data['FunctionName']),
+            'RoleName': lambda_data['rolename'],
+            'Policies': lambda_data['policies']
+        })
 
-    return min_table_data, all_table_data
+    return all_list_data, all_table_data
 
 
 def get_name_from_arn(arn):
     return arn.split('/')[-1]
 
 
-def get_policies_for_roles(client, role_names: List[str]) -> Dict[str, List[Dict[str, str]]]:
+def get_policies_for_roles(client_iam, role_names: List[str]) -> Dict[str, List[Dict[str, str]]]:
     """ Create a mapping of role names and any policies they have attached to them by 
         paginating over list_attached_role_policies() calls for each role name. 
         Attached policies will include policy name and ARN.
     """
     policy_map = {}
-    policy_paginator = client.get_paginator('list_attached_role_policies')
+    policy_paginator = client_iam.get_paginator('list_attached_role_policies')
     for name in role_names:
         role_policies = []
         for response in policy_paginator.paginate(RoleName=name):
             role_policies.extend(response.get('AttachedPolicies'))
         policy_map.update({name: role_policies})
     return policy_map
+
+
+def get_policy_body_by_arn(client_iam, policy_arn):
+    version_id = client_iam.get_policy(
+            PolicyArn=policy_arn)['Policy']['DefaultVersionId']    
+    response = client_iam.get_policy_version(
+            PolicyArn=policy_arn, VersionId=version_id)
+    return response['PolicyVersion']['Document']
 
 def print_lambda_list(args):
     """
@@ -217,39 +157,40 @@ def print_lambda_list(args):
                     function_name = function_data['FunctionName']
                     role_arn = function_data['Role']
                     role_name = get_name_from_arn(role_arn)
-                    
+
+                    policy_map = get_policies_for_roles(iam_client, [role_name])
                     policies = []
-                    policies = get_policies_for_roles(iam_client, [role_name])
 
-                    # Extract last modified time
-                    last_modified = datetime.strptime(
-                        function_data['LastModified'].split('.')[0],
-                        DATETIME_FORMAT
-                    )
+                    if (len(policy_map)>0):
+                        first_key = list(policy_map.keys())[0]
+                        policies = policy_map[first_key]
+                    
+                    #print(policies)
+                    policy_dict = {}
+                    policy_list = []
+                    for policy in policies:
+                        #print(policy)
+                        #print(policy['PolicyName'])
+                        policy_name = policy['PolicyName']
+                        policy_arn = policy['PolicyArn']
 
-                    # Extract last invocation time from logs
-                    last_invocation = get_last_invocation(
-                        region,
-                        args,
-                        function_data['FunctionName']
-                    )
+                        policy_dict["PolicyName"] = policy_name
+                        policy_dict["PolicyArn"] = policy_arn
+                        
+                        print('geting document for policy: '+policy_arn)
+                        if 'arn:aws:iam::aws:policy' in policy_arn:    
+                            policy_dict["PolicyDocument"] = "built-in"
+                        else:
+                            policy_dict["PolicyDocument"] = get_policy_body_by_arn(iam_client, policy_arn)
+                            
+                        policy_list.append(policy_dict)
 
-                    if last_invocation != -1:
-                        inactive_days = (
-                            datetime.now() -
-                            datetime.fromtimestamp(last_invocation / 1000)
-                        ).days
-                        if args.inactive_days_filter > inactive_days:
-                            continue
 
                     lambdas_data.append({
                         'region': region,
                         'function-data': function_data,
-                        'last-modified': last_modified,
-                        'last-invocation': last_invocation,           
-                        'runtime': function_data['Runtime'],
                         'rolename': role_name,
-                        'policies': json.dumps(policies)
+                        'policies': policy_list
                     })
 
                 # Verify if there is next marker
@@ -263,20 +204,16 @@ def print_lambda_list(args):
     # Sort data by the given key (default: by region)
     lambdas_data.sort(key=lambda x: x[args.sort_by])
     
-    min_table_data, all_table_data = create_tables(lambdas_data, args)
-    table = AsciiTable(min_table_data)
+    all_list_data, all_table_data = create_tables(lambdas_data, args)
+    
+    table = AsciiTable(all_table_data)
     print(table.table)
 
-    if not args.csv:
+    if not args.json:
         return
 
-    with codecs.open(args.csv, 'w', encoding='utf-8') as output_file:
-        for table_row in all_table_data:
-            output_line = '{0}\n'.format(','.join(table_row))
-            output_file.writelines(output_line)
-
-
-
+    with open(args.json, 'w', encoding='utf-8') as outfile:
+        json.dump(all_list_data, outfile, indent=4)
 
 
 if __name__ == '__main__':
@@ -288,22 +225,11 @@ if __name__ == '__main__':
         )
     )
 
+    
     parser.add_argument(
-        '--all',
-        dest='should_print_all',
-        #default=False,
-        default=True,
-        action='store_true',
-        help=(
-            'Print all the information to the screen '
-            '(default: print summarized information).'
-        )
-    )
-
-    parser.add_argument(
-        '--csv',
+        '--json',
         type=str,
-        help='CSV filename to output full table data.',
+        help='JSON filename to output full table data.',
         metavar='output_filename'
     )
 
@@ -326,13 +252,6 @@ if __name__ == '__main__':
         metavar='token-secret'
     )
 
-    parser.add_argument(
-        '--inactive-days-filter',
-        type=int,
-        help='Filter only Lambda functions with minimum days of inactivity.',
-        default=0,
-        metavar='minimum-inactive-days'
-    )
 
     parser.add_argument(
         '--sort-by',

@@ -63,11 +63,11 @@ def get_policy_documents_for_role(role_name):
     return policies
 
 #role_names = get_role_names()
-'''
+
 role_names = ['ria-crop-image-role-wxpkpwcs']
 attached_role_policies = get_policies_for_roles(role_names)
 print(attached_role_policies)
-'''
+
 
 '''
 policies = get_policy_documents_for_role('ria-crop-image-role-wxpkpwcs')
@@ -84,6 +84,7 @@ inline_response = client_iam.get_role_policy(
 print(inline_response)
 '''
 
+'''
 version_id = client_iam.get_policy(
             PolicyArn='arn:aws:iam::838635938245:policy/service-role/AWSLambdaBasicExecutionRole-52db32c5-0793-4bd4-ab8b-449016e0b153')['Policy']['DefaultVersionId']
 print('policy version id:'+version_id)      
@@ -91,4 +92,4 @@ attached_response = client_iam.get_policy_version(
             PolicyArn='arn:aws:iam::838635938245:policy/service-role/AWSLambdaBasicExecutionRole-52db32c5-0793-4bd4-ab8b-449016e0b153', VersionId=version_id) 
 #response['PolicyVersion']['Document']
 print(attached_response)
- 
+''' 
