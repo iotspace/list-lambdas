@@ -13,12 +13,12 @@ python lambdas_report.py --csv lambdas_report.csv
 ```
 
 ```
-python list_lambdas.py --token-key-id AKIA4GQUY4HCYNJJGPHX --token-secret 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
+python list_lambdas.py --token-key-id AKIA4GQUY4HCYNJJXXXX --token-secret s6VgVue62rU+5BtIkpPcTd/vsgZHD+g4nFmvXXXX
 ```
 
 Save results to CSV file
 ```
-python list_lambdas.py --token-key-id AKIA4GQUY4HCYNJJGPHX --token-secret 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 --csv lambda_list.csv
+python list_lambdas.py --token-key-id AKIA4GQUY4HCYNJJXXXX --token-secret s6VgVue62rU+5BtIkpPcTd/vsgZHD+g4nFmvXXXX --csv lambda_list.csv
 ```
 
 
