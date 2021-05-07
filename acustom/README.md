@@ -9,7 +9,7 @@ python list_lambdas.py
 
 python list_lambdas.py --csv lambdas_list.csv
 
-python lambdas_report.py --csv lambdas_report.csv
+python lambdas_report.py --json lambdas_report.json
 ```
 
 ```

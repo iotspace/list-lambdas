@@ -120,7 +120,45 @@
         "Region": "us-east-1",
         "FunctionName": "python-example-iam-dev-hello-iam-example",
         "RoleName": "python-example-iam-dev-us-east-1-lambdaRole",
-        "Policies": []
+        "Policies": [
+            {
+                "PolicyName": "python-example-iam-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-iam-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-iam-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "lambda:*"
+                            ],
+                            "Resource": [
+                                "*"
+                            ],
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            }
+        ]
     },
     {
         "Region": "us-east-1",
@@ -157,7 +195,36 @@
         "Region": "us-east-1",
         "FunctionName": "python-example-environment-variables-dev-hello-env-john",
         "RoleName": "python-example-environment-variables-dev-us-east-1-lambdaRole",
-        "Policies": []
+        "Policies": [
+            {
+                "PolicyName": "python-example-environment-variables-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-environment-variables-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-environment-variables-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            }
+        ]
     },
     {
         "Region": "us-east-1",
@@ -230,9 +297,81 @@
     },
     {
         "Region": "us-east-1",
+        "FunctionName": "Test_Pillow",
+        "RoleName": "lambda_basic_execution_role",
+        "Policies": [
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole",
+                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                "PolicyDocument": "built-in"
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
         "FunctionName": "python-example-environment-variables-dev-hello-env-marc",
         "RoleName": "python-example-environment-variables-dev-us-east-1-lambdaRole",
-        "Policies": []
+        "Policies": [
+            {
+                "PolicyName": "python-example-environment-variables-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-environment-variables-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-environment-variables-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
+        "FunctionName": "collage-detection-training-job",
+        "RoleName": "collage-detection-training-job-role-4oc99xc2",
+        "Policies": [
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole-03f2e294-5b41-4ef6-b834-31ab7d7bffc5",
+                "PolicyArn": "arn:aws:iam::838635938245:policy/service-role/AWSLambdaBasicExecutionRole-03f2e294-5b41-4ef6-b834-31ab7d7bffc5",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "logs:CreateLogGroup",
+                            "Resource": "arn:aws:logs:us-east-1:838635938245:*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/collage-detection-training-job:*"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
     },
     {
         "Region": "us-east-1",
@@ -314,6 +453,28 @@
                         }
                     ]
                 }
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
+        "FunctionName": "tqv-calculate-square",
+        "RoleName": "InvokeOtherLambdaRole",
+        "Policies": [
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole",
+                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                "PolicyDocument": "built-in"
+            },
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole",
+                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                "PolicyDocument": "built-in"
+            },
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole",
+                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                "PolicyDocument": "built-in"
             }
         ]
     },
@@ -423,9 +584,60 @@
         "RoleName": "python-example-vpc-dev-us-east-1-lambdaRole",
         "Policies": [
             {
-                "PolicyName": "AWSLambdaVPCAccessExecutionRole",
-                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
-                "PolicyDocument": "built-in"
+                "PolicyName": "python-example-vpc-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-vpc-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-vpc-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            },
+            {
+                "PolicyName": "python-example-vpc-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-vpc-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-example-vpc-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -516,7 +728,43 @@
         "Region": "us-east-1",
         "FunctionName": "python-s3-thumbnail-dev-s3-thumbnail-generator",
         "RoleName": "python-s3-thumbnail-dev-us-east-1-lambdaRole",
-        "Policies": []
+        "Policies": [
+            {
+                "PolicyName": "python-s3-thumbnail-dev-lambda",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:CreateLogGroup"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-s3-thumbnail-dev*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/python-s3-thumbnail-dev*:*:*"
+                            ],
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": [
+                                "s3:*"
+                            ],
+                            "Resource": "*",
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            }
+        ]
     },
     {
         "Region": "us-east-1",
@@ -778,6 +1026,37 @@
     },
     {
         "Region": "us-east-1",
+        "FunctionName": "test-import-lib-python",
+        "RoleName": "test-import-lib-python-role-m7qdw50s",
+        "Policies": [
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole-560155b1-f3d2-4def-9778-9914535c6d04",
+                "PolicyArn": "arn:aws:iam::838635938245:policy/service-role/AWSLambdaBasicExecutionRole-560155b1-f3d2-4def-9778-9914535c6d04",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "logs:CreateLogGroup",
+                            "Resource": "arn:aws:logs:us-east-1:838635938245:*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                            ],
+                            "Resource": [
+                                "arn:aws:logs:us-east-1:838635938245:log-group:/aws/lambda/test-import-lib-python:*"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
         "FunctionName": "sam-app-HelloWorldFunction-U5MYTWBRZ343",
         "RoleName": "sam-app-HelloWorldFunctionRole-1KH4Q6I2UHEVF",
         "Policies": [
@@ -968,6 +1247,18 @@
     },
     {
         "Region": "us-east-1",
+        "FunctionName": "tqv-calculator",
+        "RoleName": "lambda_basic_execution_role",
+        "Policies": [
+            {
+                "PolicyName": "AWSLambdaBasicExecutionRole",
+                "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                "PolicyDocument": "built-in"
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
         "FunctionName": "lambda_test_pandas",
         "RoleName": "dev-rS-role",
         "Policies": [
@@ -1015,6 +1306,32 @@
                 "PolicyName": "AmazonElasticFileSystemClientReadWriteAccess",
                 "PolicyArn": "arn:aws:iam::aws:policy/AmazonElasticFileSystemClientReadWriteAccess",
                 "PolicyDocument": "built-in"
+            }
+        ]
+    },
+    {
+        "Region": "us-east-1",
+        "FunctionName": "s3_json_dynamodb",
+        "RoleName": "s3_json_dynamodb",
+        "Policies": [
+            {
+                "PolicyName": "s3_json_dynamodb",
+                "PolicyArn": "arn:aws:iam::838635938245:policy/s3_json_dynamodb",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "VisualEditor0",
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:*",
+                                "logs:*",
+                                "dynamodb:*"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -1105,7 +1422,30 @@
         "Region": "us-east-1",
         "FunctionName": "anhpt-lambda-test",
         "RoleName": "test-qa-role-across-to-dev",
-        "Policies": []
+        "Policies": [
+            {
+                "PolicyName": "AssumeRole",
+                "PolicyArn": null,
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:PutObject",
+                                "s3:PutObjectAcl"
+                            ],
+                            "Resource": "arn:aws:s3:::test-pdf-generator/*",
+                            "Effect": "Allow"
+                        },
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Resource": "arn:aws:iam::611935779855:role/test-role-across",
+                            "Effect": "Allow"
+                        }
+                    ]
+                }
+            }
+        ]
     },
     {
         "Region": "us-east-1",

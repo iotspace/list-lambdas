@@ -105,11 +105,28 @@ def get_policies_for_roles(client_iam, role_names: List[str]) -> Dict[str, List[
     """
     policy_map = {}
     policy_paginator = client_iam.get_paginator('list_attached_role_policies')
+    inline_policy_paginator = client_iam.get_paginator('list_role_policies')
     for name in role_names:
         role_policies = []
+
+        print(f"***CHECK ATTACHED POLICIES for role: {name}****")
         for response in policy_paginator.paginate(RoleName=name):
-            role_policies.extend(response.get('AttachedPolicies'))
+            #print(response)
+            rp = response.get('AttachedPolicies')
+            print(rp)
+            role_policies.extend(rp)
+        
+        print(f"***CHECK INLINE POLICYIESfor role: {name}****")
+        for response in inline_policy_paginator.paginate(RoleName=name):
+            #print(response)
+            policy_names = response.get('PolicyNames')
+            for pn in policy_names:
+                print(f"***HAS INLINE POLICY: {pn}****")
+                role_policies.extend([{"PolicyName":pn, "PolicyArn": None}])
+
         policy_map.update({name: role_policies})
+
+
     return policy_map
 
 
@@ -119,6 +136,13 @@ def get_policy_body_by_arn(client_iam, policy_arn):
     response = client_iam.get_policy_version(
             PolicyArn=policy_arn, VersionId=version_id)
     return response['PolicyVersion']['Document']
+
+def get_policy_inline_body_by_name(client_iam, role_name, policy_name):
+    response = client_iam.get_role_policy(
+            RoleName=role_name,
+            PolicyName=policy_name)
+    # see if an IAM policy written in YAML in CloudFormation is correctly parsed and returned here as an object
+    return response['PolicyDocument']
 
 def print_lambda_list(args):
     """
@@ -156,11 +180,21 @@ def print_lambda_list(args):
                     
                     function_name = function_data['FunctionName']
                     role_arn = function_data['Role']
+
+                    # extract role name from role arn
                     role_name = get_name_from_arn(role_arn)
 
+                    # get all 
+
                     policy_map = get_policies_for_roles(iam_client, [role_name])
+
+                    print(policy_map)
                     policies = []
 
+                    '''
+                    {'role_name':[list of policies]}
+                    {'InvokeOtherLambdaRole': [{'PolicyName': 'InvokeOtherLambdaPolicy', 'PolicyArn': 'arn:aws:iam::838635938245:policy/InvokeOtherLambdaPolicy'}, {'PolicyName': 'AWSLambdaLambdaFunctionDestinationExecutionRole-840e09ab-f85d-48fa-ab8e-7e63bac259a0', 'PolicyArn': 'arn:aws:iam::838635938245:policy/service-role/AWSLambdaLambdaFunctionDestinationExecutionRole-840e09ab-f85d-48fa-ab8e-7e63bac259a0'}, {'PolicyName': 'AWSLambdaBasicExecutionRole', 'PolicyArn': 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'}]}
+                    '''
                     if (len(policy_map)>0):
                         first_key = list(policy_map.keys())[0]
                         policies = policy_map[first_key]
@@ -177,11 +211,15 @@ def print_lambda_list(args):
                         policy_dict["PolicyName"] = policy_name
                         policy_dict["PolicyArn"] = policy_arn
                         
-                        print('geting document for policy: '+policy_arn)
-                        if 'arn:aws:iam::aws:policy' in policy_arn:    
-                            policy_dict["PolicyDocument"] = "built-in"
+                        if policy_arn:
+                            print('geting document for attached policy: '+policy_arn)
+                            if 'arn:aws:iam::aws:policy' in policy_arn:    
+                                policy_dict["PolicyDocument"] = "built-in"
+                            else:
+                                policy_dict["PolicyDocument"] = get_policy_body_by_arn(iam_client, policy_arn)
                         else:
-                            policy_dict["PolicyDocument"] = get_policy_body_by_arn(iam_client, policy_arn)
+                            print('geting document for inline policy: '+policy_name)
+                            policy_dict["PolicyDocument"] = get_policy_inline_body_by_name(iam_client, role_name, policy_name)
                             
                         policy_list.append(policy_dict)
 
@@ -207,7 +245,7 @@ def print_lambda_list(args):
     all_list_data, all_table_data = create_tables(lambdas_data, args)
     
     table = AsciiTable(all_table_data)
-    print(table.table)
+    #print(table.table)
 
     if not args.json:
         return
